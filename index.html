@@ -28,6 +28,15 @@
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PC5FHPLS0S"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-PC5FHPLS0S');
+  </script>
+  
   <!-- Structured Data -->
   <script type="application/ld+json">
   {
@@ -615,7 +624,7 @@
 
   <!-- Main Content -->
   <main id="main-content">
-    <!-- Reviews Section - MOVED ABOVE ABOUT SECTION -->
+    <!-- Reviews Section -->
     <section id="reviews" class="reviews-section">
       <div class="container">
         <div class="reviews-header">
@@ -902,6 +911,37 @@
       }
     }
 
+    // Download tracking with Google Analytics
+    function trackDownload(platform) {
+      if (typeof gtag !== 'undefined') {
+          gtag('event', 'download', {
+              'event_category': 'app',
+              'event_label': platform
+          });
+          console.log('Tracked download:', platform);
+      }
+    }
+
+    // Setup event listeners when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      const windowsBtn = document.querySelector('.btn-windows');
+      const androidBtn = document.querySelector('.btn-android');
+      const iosBtn = document.querySelector('.btn-ios');
+      
+      if (windowsBtn) {
+          windowsBtn.addEventListener('click', () => trackDownload('windows'));
+      }
+      if (androidBtn) {
+          androidBtn.addEventListener('click', () => trackDownload('android'));
+      }
+      if (iosBtn) {
+          iosBtn.addEventListener('click', () => trackDownload('ios'));
+      }
+      
+      // Load reviews
+      loadReviews();
+    });
+
     // Coming Soon Modal Functions
     function showComingSoon() {
       document.getElementById('comingSoonModal').style.display = 'flex';
@@ -922,9 +962,6 @@
 
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
-      // Load reviews from JSON file
-      loadReviews();
-      
       // Add event listener to show more button
       document.getElementById('showMoreBtn').addEventListener('click', showMoreReviews);
     });
