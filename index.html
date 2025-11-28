@@ -389,6 +389,149 @@
       text-align: center;
     }
     
+    /* Reviews Section */
+    .reviews-section {
+      background-color: #1a1a1a;
+    }
+    
+    .reviews-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    
+    .reviews-stats {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    
+    .rating-summary {
+      text-align: center;
+      padding: 20px;
+      background: var(--gray);
+      border-radius: 10px;
+      min-width: 200px;
+    }
+    
+    .average-rating {
+      font-size: 3rem;
+      font-weight: bold;
+      color: var(--primary);
+      line-height: 1;
+    }
+    
+    .star-rating {
+      color: #FFD700;
+      font-size: 1.2rem;
+      margin: 10px 0;
+    }
+    
+    .total-reviews {
+      color: var(--light);
+      font-size: 0.9rem;
+    }
+    
+    .reviews-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 25px;
+    }
+    
+    .review-card {
+      background: var(--gray);
+      padding: 25px;
+      border-radius: 10px;
+      transition: var(--transition);
+    }
+    
+    .review-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+    
+    .review-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 15px;
+    }
+    
+    .reviewer-info {
+      flex: 1;
+    }
+    
+    .reviewer-name {
+      font-weight: bold;
+      color: var(--light);
+      margin-bottom: 5px;
+    }
+    
+    .review-date {
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+    
+    .review-stars {
+      color: #FFD700;
+      font-size: 1rem;
+    }
+    
+    .review-text {
+      margin-bottom: 15px;
+      line-height: 1.6;
+    }
+    
+    .review-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+    
+    .helpful-count {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .helpful-count i {
+      color: var(--primary);
+    }
+    
+    .show-more-btn {
+      display: block;
+      margin: 40px auto 0;
+      background: transparent;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+      padding: 12px 30px;
+      border-radius: 30px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    .show-more-btn:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* Loading State */
+    .loading-reviews {
+      text-align: center;
+      padding: 40px;
+      color: var(--primary);
+    }
+    
+    .loading-reviews i {
+      font-size: 2rem;
+      margin-bottom: 15px;
+    }
+    
     /* Responsive Design */
     @media (max-width: 768px) {
       section {
@@ -412,6 +555,19 @@
       .download-buttons {
         flex-direction: column;
         align-items: center;
+      }
+      
+      .reviews-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .review-header {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .review-stars {
+        align-self: flex-start;
       }
     }
     
@@ -585,6 +741,39 @@
       </div>
     </section>
 
+    <!-- Reviews Section -->
+    <section id="reviews" class="reviews-section">
+      <div class="container">
+        <div class="reviews-header">
+          <h2 class="section-title">What Our Users Say</h2>
+          <p>Join over 70+ healthcare professionals who trust Pyramedz</p>
+        </div>
+        
+        <div class="reviews-stats">
+          <div class="rating-summary">
+            <div class="average-rating">5.0</div>
+            <div class="star-rating">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+            </div>
+            <div class="total-reviews">Based on <span id="reviewCount">30+</span> reviews</div>
+          </div>
+        </div>
+        
+        <div class="reviews-grid" id="reviewsContainer">
+          <div class="loading-reviews">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading reviews...</p>
+          </div>
+        </div>
+        
+        <button class="show-more-btn" id="showMoreBtn" style="display: none;">Show More Reviews</button>
+      </div>
+    </section>
+
     <!-- Benefits Section -->
     <section id="benefits" style="background-color: #1a1a1a;">
       <div class="container">
@@ -644,6 +833,102 @@
   </footer>
 
   <script>
+    // Global variables
+    let allReviews = [];
+    let displayedCount = 0;
+    const reviewsPerLoad = 6;
+
+    // Function to generate star rating HTML
+    function generateStars(count) {
+      let stars = '';
+      for (let i = 0; i < count; i++) {
+        stars += '<i class="fas fa-star"></i>';
+      }
+      return stars;
+    }
+
+    // Function to display reviews
+    function displayReviews(startIndex = 0, count = reviewsPerLoad) {
+      const reviewsContainer = document.getElementById('reviewsContainer');
+      const endIndex = Math.min(startIndex + count, allReviews.length);
+      
+      // Clear loading state if it's the first load
+      if (startIndex === 0) {
+        reviewsContainer.innerHTML = '';
+      }
+      
+      for (let i = startIndex; i < endIndex; i++) {
+        const review = allReviews[i];
+        const reviewCard = document.createElement('div');
+        reviewCard.className = 'review-card';
+        
+        reviewCard.innerHTML = `
+          <div class="review-header">
+            <div class="reviewer-info">
+              <div class="reviewer-name">${review.reviewer_name}</div>
+              <div class="review-date">${review.review_date}</div>
+            </div>
+            <div class="review-stars">
+              ${generateStars(review.star_count)}
+            </div>
+          </div>
+          <div class="review-text">${review.review_text}</div>
+          <div class="review-footer">
+            <div class="helpful-count">
+              <i class="fas fa-thumbs-up"></i>
+              ${review.helpful_count} people found this helpful
+            </div>
+          </div>
+        `;
+        
+        reviewsContainer.appendChild(reviewCard);
+      }
+      
+      // Update show more button
+      const showMoreBtn = document.getElementById('showMoreBtn');
+      if (endIndex >= allReviews.length) {
+        showMoreBtn.style.display = 'none';
+      } else {
+        showMoreBtn.style.display = 'block';
+      }
+    }
+
+    // Show more reviews function
+    function showMoreReviews() {
+      displayedCount += reviewsPerLoad;
+      displayReviews(0, displayedCount);
+    }
+
+    // Load reviews from JSON file
+    async function loadReviews() {
+      try {
+        const response = await fetch('ratings.json');
+        if (!response.ok) {
+          throw new Error('Failed to load reviews');
+        }
+        const data = await response.json();
+        allReviews = data.reviews;
+        
+        // Update review count
+        document.getElementById('reviewCount').textContent = allReviews.length + '+';
+        
+        // Display initial reviews
+        displayedCount = reviewsPerLoad;
+        displayReviews(0, reviewsPerLoad);
+        
+      } catch (error) {
+        console.error('Error loading reviews:', error);
+        const reviewsContainer = document.getElementById('reviewsContainer');
+        reviewsContainer.innerHTML = `
+          <div class="loading-reviews">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>Unable to load reviews at this time. Please try again later.</p>
+          </div>
+        `;
+        document.getElementById('showMoreBtn').style.display = 'none';
+      }
+    }
+
     // Coming Soon Modal Functions
     function showComingSoon() {
       document.getElementById('comingSoonModal').style.display = 'flex';
@@ -661,6 +946,15 @@
         closeModal();
       }
     }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load reviews from JSON file
+      loadReviews();
+      
+      // Add event listener to show more button
+      document.getElementById('showMoreBtn').addEventListener('click', showMoreReviews);
+    });
   </script>
 </body>
 </html>
