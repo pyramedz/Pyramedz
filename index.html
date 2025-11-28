@@ -429,11 +429,6 @@
       margin: 10px 0;
     }
     
-    .total-reviews {
-      color: var(--light);
-      font-size: 0.9rem;
-    }
-    
     .reviews-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -482,24 +477,6 @@
     .review-text {
       margin-bottom: 15px;
       line-height: 1.6;
-    }
-    
-    .review-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.85rem;
-      color: #aaa;
-    }
-    
-    .helpful-count {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    
-    .helpful-count i {
-      color: var(--primary);
     }
     
     .show-more-btn {
@@ -638,6 +615,38 @@
 
   <!-- Main Content -->
   <main id="main-content">
+    <!-- Reviews Section - MOVED ABOVE ABOUT SECTION -->
+    <section id="reviews" class="reviews-section">
+      <div class="container">
+        <div class="reviews-header">
+          <h2 class="section-title">What Our Users Say</h2>
+          <p>Join over 10000+ healthcare professionals who trust Pyramedz</p>
+        </div>
+        
+        <div class="reviews-stats">
+          <div class="rating-summary">
+            <div class="average-rating">4.9</div>
+            <div class="star-rating">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star-half-alt"></i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="reviews-grid" id="reviewsContainer">
+          <div class="loading-reviews">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading reviews...</p>
+          </div>
+        </div>
+        
+        <button class="show-more-btn" id="showMoreBtn" style="display: none;">Show More Reviews</button>
+      </div>
+    </section>
+
     <!-- About Section -->
     <section id="about">
       <div class="container">
@@ -741,39 +750,6 @@
       </div>
     </section>
 
-    <!-- Reviews Section -->
-    <section id="reviews" class="reviews-section">
-      <div class="container">
-        <div class="reviews-header">
-          <h2 class="section-title">What Our Users Say</h2>
-          <p>Join over 70+ healthcare professionals who trust Pyramedz</p>
-        </div>
-        
-        <div class="reviews-stats">
-          <div class="rating-summary">
-            <div class="average-rating">5.0</div>
-            <div class="star-rating">
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-            </div>
-            <div class="total-reviews">Based on <span id="reviewCount">30+</span> reviews</div>
-          </div>
-        </div>
-        
-        <div class="reviews-grid" id="reviewsContainer">
-          <div class="loading-reviews">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p>Loading reviews...</p>
-          </div>
-        </div>
-        
-        <button class="show-more-btn" id="showMoreBtn" style="display: none;">Show More Reviews</button>
-      </div>
-    </section>
-
     <!-- Benefits Section -->
     <section id="benefits" style="background-color: #1a1a1a;">
       <div class="container">
@@ -841,8 +817,14 @@
     // Function to generate star rating HTML
     function generateStars(count) {
       let stars = '';
-      for (let i = 0; i < count; i++) {
-        stars += '<i class="fas fa-star"></i>';
+      for (let i = 0; i < 5; i++) {
+        if (i < Math.floor(count)) {
+          stars += '<i class="fas fa-star"></i>';
+        } else if (i === Math.floor(count) && count % 1 !== 0) {
+          stars += '<i class="fas fa-star-half-alt"></i>';
+        } else {
+          stars += '<i class="far fa-star"></i>';
+        }
       }
       return stars;
     }
@@ -873,12 +855,6 @@
             </div>
           </div>
           <div class="review-text">${review.review_text}</div>
-          <div class="review-footer">
-            <div class="helpful-count">
-              <i class="fas fa-thumbs-up"></i>
-              ${review.helpful_count} people found this helpful
-            </div>
-          </div>
         `;
         
         reviewsContainer.appendChild(reviewCard);
@@ -908,9 +884,6 @@
         }
         const data = await response.json();
         allReviews = data.reviews;
-        
-        // Update review count
-        document.getElementById('reviewCount').textContent = allReviews.length + '+';
         
         // Display initial reviews
         displayedCount = reviewsPerLoad;
